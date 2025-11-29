@@ -1,0 +1,30 @@
+export type OrderStatus = 'pending' | 'processing' | 'completed' | 'cancelled';
+
+export interface Order {
+  id: string;
+  orderNumber: string;
+  clinicId: string;
+  clinicName: string;
+  date: Date;
+  status: OrderStatus;
+  itemsCount: number;
+  totalAmount: number;
+  credits: number;
+}
+
+export interface Clinic {
+  id: string;
+  name: string;
+  location: string;
+  contactPerson: string;
+  contactEmail: string;
+}
+
+export interface CreditUsage {
+  clinicId: string;
+  clinicName: string;
+  creditsUsed: number;
+  totalOrders: number;
+  lastOrderDate: Date;
+  amountBilled: number;
+}
