@@ -10,6 +10,16 @@ export interface Order {
   itemsCount: number;
   totalAmount: number;
   credits: number;
+  fulfillmentPharmacy: string;
+}
+
+export interface ClinicOrderSummary {
+  clinicId: string;
+  clinicName: string;
+  lastOrderDate: Date;
+  fulfillmentPharmacy: string;
+  status: OrderStatus;
+  totalOrders: number;
 }
 
 export interface Clinic {

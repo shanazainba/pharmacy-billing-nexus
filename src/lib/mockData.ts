@@ -1,4 +1,13 @@
-import { Order, Clinic, CreditUsage } from '@/types';
+import { Order, Clinic, CreditUsage, ClinicOrderSummary } from '@/types';
+
+// Mock pharmacies
+export const mockPharmacies = [
+  'Central Pharmacy',
+  'MedCare Pharmacy',
+  'HealthPlus Pharmacy',
+  'Wellness Pharmacy',
+  'CarePoint Pharmacy',
+];
 
 export const mockClinics: Clinic[] = [
   {
@@ -42,6 +51,7 @@ export const mockOrders: Order[] = [
     itemsCount: 45,
     totalAmount: 3250.00,
     credits: 65,
+    fulfillmentPharmacy: 'Central Pharmacy',
   },
   {
     id: 'o2',
@@ -53,6 +63,7 @@ export const mockOrders: Order[] = [
     itemsCount: 32,
     totalAmount: 2180.00,
     credits: 44,
+    fulfillmentPharmacy: 'MedCare Pharmacy',
   },
   {
     id: 'o3',
@@ -64,6 +75,7 @@ export const mockOrders: Order[] = [
     itemsCount: 28,
     totalAmount: 1890.00,
     credits: 38,
+    fulfillmentPharmacy: 'Central Pharmacy',
   },
   {
     id: 'o4',
@@ -75,6 +87,7 @@ export const mockOrders: Order[] = [
     itemsCount: 52,
     totalAmount: 4120.00,
     credits: 82,
+    fulfillmentPharmacy: 'HealthPlus Pharmacy',
   },
   {
     id: 'o5',
@@ -86,6 +99,7 @@ export const mockOrders: Order[] = [
     itemsCount: 38,
     totalAmount: 2650.00,
     credits: 53,
+    fulfillmentPharmacy: 'Wellness Pharmacy',
   },
   {
     id: 'o6',
@@ -97,6 +111,7 @@ export const mockOrders: Order[] = [
     itemsCount: 41,
     totalAmount: 2980.00,
     credits: 60,
+    fulfillmentPharmacy: 'MedCare Pharmacy',
   },
   {
     id: 'o7',
@@ -108,6 +123,32 @@ export const mockOrders: Order[] = [
     itemsCount: 15,
     totalAmount: 950.00,
     credits: 19,
+    fulfillmentPharmacy: 'HealthPlus Pharmacy',
+  },
+  // Add recent orders for today
+  {
+    id: 'o8',
+    orderNumber: 'ORD-2024-008',
+    clinicId: 'c1',
+    clinicName: 'Riverside Medical Center',
+    date: new Date(),
+    status: 'completed',
+    itemsCount: 35,
+    totalAmount: 2450.00,
+    credits: 49,
+    fulfillmentPharmacy: 'Central Pharmacy',
+  },
+  {
+    id: 'o9',
+    orderNumber: 'ORD-2024-009',
+    clinicId: 'c4',
+    clinicName: 'Summit Wellness Clinic',
+    date: new Date(),
+    status: 'pending',
+    itemsCount: 22,
+    totalAmount: 1650.00,
+    credits: 33,
+    fulfillmentPharmacy: 'Wellness Pharmacy',
   },
 ];
 
@@ -149,3 +190,24 @@ export const mockCreditUsage: CreditUsage[] = [
     lastOrderDate: new Date('2024-01-25'),
   },
 ];
+
+// Generate clinic order summaries
+export const getClinicOrderSummaries = (): ClinicOrderSummary[] => {
+  const clinicMap = new Map<string, ClinicOrderSummary>();
+  
+  mockOrders.forEach(order => {
+    const existing = clinicMap.get(order.clinicId);
+    if (!existing || order.date > existing.lastOrderDate) {
+      clinicMap.set(order.clinicId, {
+        clinicId: order.clinicId,
+        clinicName: order.clinicName,
+        lastOrderDate: order.date,
+        fulfillmentPharmacy: order.fulfillmentPharmacy,
+        status: order.status,
+        totalOrders: mockOrders.filter(o => o.clinicId === order.clinicId).length,
+      });
+    }
+  });
+  
+  return Array.from(clinicMap.values());
+};
