@@ -50,47 +50,45 @@ export const exportOrdersToPDF = (orders: Order[], filename = 'clinic_orders.pdf
   doc.save(filename);
 };
 
-export const exportCreditUsageToExcel = (creditUsage: CreditUsage[], filename = 'credit_billing.xlsx') => {
+export const exportCreditUsageToExcel = (creditUsage: CreditUsage[], filename = 'message_billing.xlsx') => {
   const worksheet = XLSX.utils.json_to_sheet(
     creditUsage.map(usage => ({
       'Clinic Name': usage.clinicName,
-      'Credits Used': usage.creditsUsed,
-      'Total Orders': usage.totalOrders,
+      'WhatsApp Messages': usage.whatsappMessages,
+      'Email Messages': usage.emailMessages,
       'Last Order Date': format(usage.lastOrderDate, 'yyyy-MM-dd'),
-      'Amount Billed': `$${usage.amountBilled.toFixed(2)}`,
     }))
   );
 
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Credit Usage');
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Message Usage');
   XLSX.writeFile(workbook, filename);
 };
 
-export const exportCreditUsageToPDF = (creditUsage: CreditUsage[], filename = 'credit_billing.pdf') => {
+export const exportCreditUsageToPDF = (creditUsage: CreditUsage[], filename = 'message_billing.pdf') => {
   const doc = new jsPDF();
   
   doc.setFontSize(18);
-  doc.text('Credit Billing Report', 14, 22);
+  doc.text('Message Billing Report', 14, 22);
   
   doc.setFontSize(11);
   doc.text(`Generated: ${format(new Date(), 'PPpp')}`, 14, 32);
 
-  const totalCredits = creditUsage.reduce((sum, usage) => sum + usage.creditsUsed, 0);
-  const totalAmount = creditUsage.reduce((sum, usage) => sum + usage.amountBilled, 0);
+  const totalWhatsapp = creditUsage.reduce((sum, usage) => sum + usage.whatsappMessages, 0);
+  const totalEmail = creditUsage.reduce((sum, usage) => sum + usage.emailMessages, 0);
 
   doc.setFontSize(12);
-  doc.text(`Total Credits Consumed: ${totalCredits}`, 14, 42);
-  doc.text(`Total Amount: $${totalAmount.toFixed(2)}`, 14, 50);
+  doc.text(`Total WhatsApp Messages: ${totalWhatsapp.toLocaleString()}`, 14, 42);
+  doc.text(`Total Email Messages: ${totalEmail.toLocaleString()}`, 14, 50);
 
   autoTable(doc, {
     startY: 60,
-    head: [['Clinic', 'Credits', 'Orders', 'Last Order', 'Amount']],
+    head: [['Clinic', 'WhatsApp', 'Email', 'Last Order']],
     body: creditUsage.map(usage => [
       usage.clinicName,
-      usage.creditsUsed,
-      usage.totalOrders,
+      usage.whatsappMessages.toLocaleString(),
+      usage.emailMessages.toLocaleString(),
       format(usage.lastOrderDate, 'MM/dd/yyyy'),
-      `$${usage.amountBilled.toFixed(2)}`,
     ]),
     theme: 'grid',
     headStyles: { fillColor: [20, 184, 166] },

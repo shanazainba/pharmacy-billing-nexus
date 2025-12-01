@@ -18,9 +18,8 @@ interface CreditBillingTableProps {
 }
 
 export const CreditBillingTable = ({ creditUsage }: CreditBillingTableProps) => {
-  const totalCredits = creditUsage.reduce((sum, usage) => sum + usage.creditsUsed, 0);
-  const totalOrders = creditUsage.reduce((sum, usage) => sum + usage.totalOrders, 0);
-  const totalAmount = creditUsage.reduce((sum, usage) => sum + usage.amountBilled, 0);
+  const totalWhatsapp = creditUsage.reduce((sum, usage) => sum + usage.whatsappMessages, 0);
+  const totalEmail = creditUsage.reduce((sum, usage) => sum + usage.emailMessages, 0);
 
   const handleExportExcel = () => {
     exportCreditUsageToExcel(creditUsage);
@@ -48,10 +47,9 @@ export const CreditBillingTable = ({ creditUsage }: CreditBillingTableProps) => 
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead className="font-semibold">Clinic Name</TableHead>
-              <TableHead className="font-semibold text-right">Credits Used</TableHead>
-              <TableHead className="font-semibold text-right">Total Orders</TableHead>
+              <TableHead className="font-semibold text-right">WhatsApp Messages</TableHead>
+              <TableHead className="font-semibold text-right">Email Messages</TableHead>
               <TableHead className="font-semibold">Last Order Date</TableHead>
-              <TableHead className="font-semibold text-right">Amount Billed</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -59,14 +57,13 @@ export const CreditBillingTable = ({ creditUsage }: CreditBillingTableProps) => 
               <TableRow key={usage.clinicId} className="hover:bg-muted/50 transition-colors">
                 <TableCell className="font-medium">{usage.clinicName}</TableCell>
                 <TableCell className="text-right font-medium text-primary">
-                  {usage.creditsUsed}
+                  {usage.whatsappMessages.toLocaleString()}
                 </TableCell>
-                <TableCell className="text-right">{usage.totalOrders}</TableCell>
+                <TableCell className="text-right font-medium text-primary">
+                  {usage.emailMessages.toLocaleString()}
+                </TableCell>
                 <TableCell className="text-muted-foreground">
                   {format(usage.lastOrderDate, 'MMM dd, yyyy')}
-                </TableCell>
-                <TableCell className="text-right font-semibold">
-                  ${usage.amountBilled.toFixed(2)}
                 </TableCell>
               </TableRow>
             ))}
@@ -74,10 +71,9 @@ export const CreditBillingTable = ({ creditUsage }: CreditBillingTableProps) => 
           <TableFooter>
             <TableRow className="bg-muted/50 font-semibold">
               <TableCell>Total</TableCell>
-              <TableCell className="text-right text-primary">{totalCredits}</TableCell>
-              <TableCell className="text-right">{totalOrders}</TableCell>
+              <TableCell className="text-right text-primary">{totalWhatsapp.toLocaleString()}</TableCell>
+              <TableCell className="text-right text-primary">{totalEmail.toLocaleString()}</TableCell>
               <TableCell>-</TableCell>
-              <TableCell className="text-right">${totalAmount.toFixed(2)}</TableCell>
             </TableRow>
           </TableFooter>
         </Table>
