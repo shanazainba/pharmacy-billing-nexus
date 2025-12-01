@@ -20,6 +20,7 @@ interface CreditBillingTableProps {
 export const CreditBillingTable = ({ creditUsage }: CreditBillingTableProps) => {
   const totalWhatsapp = creditUsage.reduce((sum, usage) => sum + usage.whatsappMessages, 0);
   const totalEmail = creditUsage.reduce((sum, usage) => sum + usage.emailMessages, 0);
+  const totalRevenue = creditUsage.reduce((sum, usage) => sum + usage.whatsappRevenue + usage.emailRevenue, 0);
 
   const handleExportExcel = () => {
     exportCreditUsageToExcel(creditUsage);
@@ -49,7 +50,7 @@ export const CreditBillingTable = ({ creditUsage }: CreditBillingTableProps) => 
               <TableHead className="font-semibold">Clinic Name</TableHead>
               <TableHead className="font-semibold text-right">WhatsApp Messages</TableHead>
               <TableHead className="font-semibold text-right">Email Messages</TableHead>
-              <TableHead className="font-semibold">Last Order Date</TableHead>
+              <TableHead className="font-semibold text-right">Revenue Generated</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -62,8 +63,8 @@ export const CreditBillingTable = ({ creditUsage }: CreditBillingTableProps) => 
                 <TableCell className="text-right font-medium text-primary">
                   {usage.emailMessages.toLocaleString()}
                 </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {format(usage.lastOrderDate, 'MMM dd, yyyy')}
+                <TableCell className="text-right font-semibold">
+                  ${(usage.whatsappRevenue + usage.emailRevenue).toFixed(2)}
                 </TableCell>
               </TableRow>
             ))}
@@ -73,7 +74,7 @@ export const CreditBillingTable = ({ creditUsage }: CreditBillingTableProps) => 
               <TableCell>Total</TableCell>
               <TableCell className="text-right text-primary">{totalWhatsapp.toLocaleString()}</TableCell>
               <TableCell className="text-right text-primary">{totalEmail.toLocaleString()}</TableCell>
-              <TableCell>-</TableCell>
+              <TableCell className="text-right">${totalRevenue.toFixed(2)}</TableCell>
             </TableRow>
           </TableFooter>
         </Table>
