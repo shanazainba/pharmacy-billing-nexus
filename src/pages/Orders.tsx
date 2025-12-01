@@ -1,13 +1,28 @@
 import { MetricCard } from '@/components/MetricCard';
 import { OrdersTable } from '@/components/OrdersTable';
-import { mockOrders, mockClinics } from '@/lib/mockData';
-import { Package, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { mockOrders, getClinicOrderSummaries } from '@/lib/mockData';
+import { Package, Calendar, CheckCircle, Clock } from 'lucide-react';
 
 const Orders = () => {
-  const totalOrders = mockOrders.length;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  
+  const totalOrdersToday = mockOrders.filter(o => {
+    const orderDate = new Date(o.date);
+    orderDate.setHours(0, 0, 0, 0);
+    return orderDate.getTime() === today.getTime();
+  }).length;
+  
+  const totalOrdersThisMonth = mockOrders.filter(o => 
+    o.date >= startOfMonth
+  ).length;
+  
   const completedOrders = mockOrders.filter(o => o.status === 'completed').length;
-  const processingOrders = mockOrders.filter(o => o.status === 'processing').length;
-  const cancelledOrders = mockOrders.filter(o => o.status === 'cancelled').length;
+  const pendingOrders = mockOrders.filter(o => o.status === 'pending').length;
+  
+  const clinicSummaries = getClinicOrderSummaries();
 
   return (
     <div className="min-h-screen bg-background">
@@ -21,34 +36,36 @@ const Orders = () => {
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <MetricCard
-            title="Total Orders"
-            value={totalOrders}
+            title="Total Orders Today"
+            value={totalOrdersToday}
             icon={Package}
+            trend={`${totalOrdersToday} orders today`}
+            trendUp
+          />
+          <MetricCard
+            title="Total Orders This Month"
+            value={totalOrdersThisMonth}
+            icon={Calendar}
             trend="+12% from last month"
             trendUp
           />
           <MetricCard
-            title="Completed"
+            title="Completed Orders"
             value={completedOrders}
             icon={CheckCircle}
             trend="+8% from last month"
             trendUp
           />
           <MetricCard
-            title="Processing"
-            value={processingOrders}
+            title="Pending Orders"
+            value={pendingOrders}
             icon={Clock}
-          />
-          <MetricCard
-            title="Cancelled"
-            value={cancelledOrders}
-            icon={XCircle}
           />
         </div>
 
         <div className="rounded-lg border bg-card p-6">
-          <h2 className="text-xl font-semibold mb-6">All Orders</h2>
-          <OrdersTable orders={mockOrders} clinics={mockClinics} />
+          <h2 className="text-xl font-semibold mb-6">Clinic Orders</h2>
+          <OrdersTable clinicSummaries={clinicSummaries} />
         </div>
       </div>
     </div>
