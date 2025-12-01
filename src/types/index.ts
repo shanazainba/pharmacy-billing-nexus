@@ -23,8 +23,9 @@ export interface Clinic {
 export interface CreditUsage {
   clinicId: string;
   clinicName: string;
-  creditsUsed: number;
-  totalOrders: number;
+  whatsappMessages: number;
+  emailMessages: number;
+  whatsappRevenue: number;
+  emailRevenue: number;
   lastOrderDate: Date;
-  amountBilled: number;
 }
