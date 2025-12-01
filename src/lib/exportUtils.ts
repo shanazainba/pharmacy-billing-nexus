@@ -56,7 +56,7 @@ export const exportCreditUsageToExcel = (creditUsage: CreditUsage[], filename = 
       'Clinic Name': usage.clinicName,
       'WhatsApp Messages': usage.whatsappMessages,
       'Email Messages': usage.emailMessages,
-      'Last Order Date': format(usage.lastOrderDate, 'yyyy-MM-dd'),
+      'Revenue Generated': `$${(usage.whatsappRevenue + usage.emailRevenue).toFixed(2)}`,
     }))
   );
 
@@ -83,12 +83,12 @@ export const exportCreditUsageToPDF = (creditUsage: CreditUsage[], filename = 'm
 
   autoTable(doc, {
     startY: 60,
-    head: [['Clinic', 'WhatsApp', 'Email', 'Last Order']],
+    head: [['Clinic', 'WhatsApp', 'Email', 'Revenue']],
     body: creditUsage.map(usage => [
       usage.clinicName,
       usage.whatsappMessages.toLocaleString(),
       usage.emailMessages.toLocaleString(),
-      format(usage.lastOrderDate, 'MM/dd/yyyy'),
+      `$${(usage.whatsappRevenue + usage.emailRevenue).toFixed(2)}`,
     ]),
     theme: 'grid',
     headStyles: { fillColor: [20, 184, 166] },
