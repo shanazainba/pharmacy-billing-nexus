@@ -35,14 +35,14 @@ const Billing = () => {
             trendUp
           />
           <MetricCard
-            title="WhatsApp Revenue Generated"
+            title="WhatsApp Revenue"
             value={`$${whatsappRevenue.toFixed(2)}`}
             icon={DollarSign}
             trend="+12% from last month"
             trendUp
           />
           <MetricCard
-            title="Email Revenue Generated"
+            title="Email Revenue"
             value={`$${emailRevenue.toFixed(2)}`}
             icon={TrendingUp}
             trend="+10% from last month"

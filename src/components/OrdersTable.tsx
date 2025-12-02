@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
+import { format, startOfDay, endOfDay, isWithinInterval } from 'date-fns';
 import {
   Table,
   TableBody,
@@ -20,8 +20,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Search, Calendar as CalendarIcon } from 'lucide-react';
 import { ClinicOrderSummary, OrderStatus } from '@/types';
+import { cn } from '@/lib/utils';
 import { SettlementDialog } from './SettlementDialog';
 import { mockOrders } from '@/lib/mockData';
 
@@ -39,14 +42,19 @@ const statusColors: Record<OrderStatus, string> = {
 export const OrdersTable = ({ clinicSummaries }: OrdersTableProps) => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
   const [settlementOpen, setSettlementOpen] = useState(false);
 
   const filteredSummaries = clinicSummaries.filter(summary => {
     const matchesSearch = summary.clinicName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          summary.fulfillmentPharmacy.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = selectedStatus === 'all' || summary.status === selectedStatus;
-    return matchesSearch && matchesStatus;
+    
+    const matchesDate = !dateFilter || isWithinInterval(summary.lastOrderDate, {
+      start: startOfDay(dateFilter),
+      end: endOfDay(dateFilter)
+    });
+    
+    return matchesSearch && matchesDate;
   });
 
   const totalCredits = mockOrders.reduce((sum, order) => sum + order.credits, 0);
@@ -70,18 +78,39 @@ export const OrdersTable = ({ clinicSummaries }: OrdersTableProps) => {
             className="pl-10"
           />
         </div>
-        <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="processing">Processing</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
-          </SelectContent>
-        </Select>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-[240px] justify-start text-left font-normal",
+                !dateFilter && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {dateFilter ? format(dateFilter, "PPP") : "Filter by date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="end">
+            <Calendar
+              mode="single"
+              selected={dateFilter}
+              onSelect={setDateFilter}
+              initialFocus
+            />
+            {dateFilter && (
+              <div className="p-3 border-t">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setDateFilter(undefined)}
+                >
+                  Clear filter
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div className="rounded-lg border bg-card">
@@ -122,11 +151,11 @@ export const OrdersTable = ({ clinicSummaries }: OrdersTableProps) => {
           </TableBody>
           <TableFooter>
             <TableRow className="bg-muted/50">
-              <TableCell colSpan={3} className="font-semibold">Total Credits Used</TableCell>
+              <TableCell colSpan={3} className="font-semibold">Total Orders</TableCell>
               <TableCell className="text-right">
                 <div className="flex items-center justify-end gap-4">
                   <span className="font-semibold text-primary text-lg">
-                    {totalCredits.toLocaleString()}
+                    {totalOrders.toLocaleString()}
                   </span>
                   <Button 
                     onClick={(e) => {

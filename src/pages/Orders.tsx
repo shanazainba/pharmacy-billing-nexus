@@ -21,8 +21,17 @@ const Orders = () => {
     o.date >= startOfMonth
   ).length;
   
-  const completedOrders = mockOrders.filter(o => o.status === 'completed').length;
-  const pendingOrders = mockOrders.filter(o => o.status === 'pending').length;
+  const completedOrdersToday = mockOrders.filter(o => {
+    const orderDate = new Date(o.date);
+    orderDate.setHours(0, 0, 0, 0);
+    return orderDate.getTime() === today.getTime() && o.status === 'completed';
+  }).length;
+  
+  const pendingOrdersToday = mockOrders.filter(o => {
+    const orderDate = new Date(o.date);
+    orderDate.setHours(0, 0, 0, 0);
+    return orderDate.getTime() === today.getTime() && o.status === 'pending';
+  }).length;
   
   const clinicSummaries = getClinicOrderSummaries();
 
@@ -52,16 +61,17 @@ const Orders = () => {
             trendUp
           />
           <MetricCard
-            title="Completed Orders"
-            value={completedOrders}
+            title="Completed Orders Today"
+            value={completedOrdersToday}
             icon={CheckCircle}
-            trend="+8% from last month"
+            trend={`${completedOrdersToday} completed today`}
             trendUp
           />
           <MetricCard
-            title="Pending Orders"
-            value={pendingOrders}
+            title="Pending Orders Today"
+            value={pendingOrdersToday}
             icon={Clock}
+            trend={`${pendingOrdersToday} pending today`}
           />
         </div>
 
