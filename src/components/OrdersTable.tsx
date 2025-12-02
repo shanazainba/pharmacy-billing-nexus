@@ -8,6 +8,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableFooter,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,8 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { FileSpreadsheet, FileText, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { ClinicOrderSummary, OrderStatus } from '@/types';
+import { SettlementDialog } from './SettlementDialog';
+import { mockOrders } from '@/lib/mockData';
 
 interface OrdersTableProps {
   clinicSummaries: ClinicOrderSummary[];
@@ -37,6 +40,7 @@ export const OrdersTable = ({ clinicSummaries }: OrdersTableProps) => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [settlementOpen, setSettlementOpen] = useState(false);
 
   const filteredSummaries = clinicSummaries.filter(summary => {
     const matchesSearch = summary.clinicName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -44,6 +48,11 @@ export const OrdersTable = ({ clinicSummaries }: OrdersTableProps) => {
     const matchesStatus = selectedStatus === 'all' || summary.status === selectedStatus;
     return matchesSearch && matchesStatus;
   });
+
+  const totalCredits = mockOrders.reduce((sum, order) => sum + order.credits, 0);
+  const totalOrders = mockOrders.length;
+  const totalAmount = mockOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+  const balance = totalAmount * 0.1; // Example: 10% of total as balance
 
   const handleRowClick = (clinicId: string) => {
     navigate(`/orders/${clinicId}`);
@@ -82,14 +91,13 @@ export const OrdersTable = ({ clinicSummaries }: OrdersTableProps) => {
               <TableHead className="font-semibold">Clinic Name</TableHead>
               <TableHead className="font-semibold">Date</TableHead>
               <TableHead className="font-semibold">Fulfillment Pharmacy</TableHead>
-              <TableHead className="font-semibold">Status</TableHead>
               <TableHead className="font-semibold text-right">Total Orders</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredSummaries.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground h-32">
+                <TableCell colSpan={4} className="text-center text-muted-foreground h-32">
                   No clinics found
                 </TableCell>
               </TableRow>
@@ -105,11 +113,6 @@ export const OrdersTable = ({ clinicSummaries }: OrdersTableProps) => {
                     {format(summary.lastOrderDate, 'MMM dd, yyyy')}
                   </TableCell>
                   <TableCell>{summary.fulfillmentPharmacy}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={statusColors[summary.status]}>
-                      {summary.status}
-                    </Badge>
-                  </TableCell>
                   <TableCell className="text-right font-medium text-primary">
                     {summary.totalOrders}
                   </TableCell>
@@ -117,8 +120,38 @@ export const OrdersTable = ({ clinicSummaries }: OrdersTableProps) => {
               ))
             )}
           </TableBody>
+          <TableFooter>
+            <TableRow className="bg-muted/50">
+              <TableCell colSpan={3} className="font-semibold">Total Credits Used</TableCell>
+              <TableCell className="text-right">
+                <div className="flex items-center justify-end gap-4">
+                  <span className="font-semibold text-primary text-lg">
+                    {totalCredits.toLocaleString()}
+                  </span>
+                  <Button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSettlementOpen(true);
+                    }}
+                    size="sm"
+                  >
+                    Settle
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableFooter>
         </Table>
       </div>
+
+      <SettlementDialog
+        open={settlementOpen}
+        onOpenChange={setSettlementOpen}
+        totalOrders={totalOrders}
+        totalCredits={totalCredits}
+        payableAmount={totalAmount}
+        balance={balance}
+      />
     </div>
   );
 };

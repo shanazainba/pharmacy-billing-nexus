@@ -1,7 +1,9 @@
 import { MetricCard } from '@/components/MetricCard';
 import { OrdersTable } from '@/components/OrdersTable';
+import { Button } from '@/components/ui/button';
 import { mockOrders, getClinicOrderSummaries } from '@/lib/mockData';
-import { Package, Calendar, CheckCircle, Clock } from 'lucide-react';
+import { Package, Calendar, CheckCircle, Clock, FileSpreadsheet, FileText } from 'lucide-react';
+import { exportClinicSummariesToExcel, exportClinicSummariesToPDF } from '@/lib/exportUtils';
 
 const Orders = () => {
   const today = new Date();
@@ -64,7 +66,27 @@ const Orders = () => {
         </div>
 
         <div className="rounded-lg border bg-card p-6">
-          <h2 className="text-xl font-semibold mb-6">Clinic Orders</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold">Clinic Orders</h2>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => exportClinicSummariesToExcel(clinicSummaries)} 
+                variant="outline" 
+                size="sm"
+              >
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                Export Excel
+              </Button>
+              <Button 
+                onClick={() => exportClinicSummariesToPDF(clinicSummaries)} 
+                variant="outline" 
+                size="sm"
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Export PDF
+              </Button>
+            </div>
+          </div>
           <OrdersTable clinicSummaries={clinicSummaries} />
         </div>
       </div>

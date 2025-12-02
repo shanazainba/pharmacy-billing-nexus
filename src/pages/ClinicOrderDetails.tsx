@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { mockOrders, mockClinics } from '@/lib/mockData';
@@ -11,8 +12,16 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ArrowLeft, FileSpreadsheet, FileText } from 'lucide-react';
 import { OrderStatus } from '@/types';
+import { exportOrdersToExcel, exportOrdersToPDF } from '@/lib/exportUtils';
 
 const statusColors: Record<OrderStatus, string> = {
   pending: 'bg-warning/10 text-warning border-warning/20',
@@ -24,9 +33,13 @@ const statusColors: Record<OrderStatus, string> = {
 const ClinicOrderDetails = () => {
   const { clinicId } = useParams<{ clinicId: string }>();
   const navigate = useNavigate();
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
 
   const clinic = mockClinics.find(c => c.id === clinicId);
-  const clinicOrders = mockOrders.filter(order => order.clinicId === clinicId);
+  const allClinicOrders = mockOrders.filter(order => order.clinicId === clinicId);
+  const clinicOrders = selectedStatus === 'all' 
+    ? allClinicOrders 
+    : allClinicOrders.filter(order => order.status === selectedStatus);
 
   if (!clinic) {
     return (
@@ -58,7 +71,41 @@ const ClinicOrderDetails = () => {
         </div>
 
         <div className="rounded-lg border bg-card p-6">
-          <h2 className="text-xl font-semibold mb-6">All Orders</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold">All Orders</h2>
+            <div className="flex items-center gap-4">
+              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="processing">Processing</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => exportOrdersToExcel(clinicOrders, `${clinic.name}_orders.xlsx`)} 
+                  variant="outline" 
+                  size="sm"
+                >
+                  <FileSpreadsheet className="mr-2 h-4 w-4" />
+                  Export Excel
+                </Button>
+                <Button 
+                  onClick={() => exportOrdersToPDF(clinicOrders, `${clinic.name}_orders.pdf`)} 
+                  variant="outline" 
+                  size="sm"
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  Export PDF
+                </Button>
+              </div>
+            </div>
+          </div>
           <div className="rounded-lg border bg-card">
             <Table>
               <TableHeader>
@@ -67,14 +114,13 @@ const ClinicOrderDetails = () => {
                   <TableHead className="font-semibold">Date</TableHead>
                   <TableHead className="font-semibold">Fulfillment Pharmacy</TableHead>
                   <TableHead className="font-semibold">Status</TableHead>
-                  <TableHead className="font-semibold text-right">Items</TableHead>
-                  <TableHead className="font-semibold text-right">Amount</TableHead>
+                  <TableHead className="font-semibold text-right">Credits</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {clinicOrders.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground h-32">
+                    <TableCell colSpan={5} className="text-center text-muted-foreground h-32">
                       No orders found for this clinic
                     </TableCell>
                   </TableRow>
@@ -91,9 +137,8 @@ const ClinicOrderDetails = () => {
                           {order.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right">{order.itemsCount}</TableCell>
-                      <TableCell className="text-right font-medium">
-                        ${order.totalAmount.toFixed(2)}
+                      <TableCell className="text-right font-medium text-primary">
+                        {order.credits}
                       </TableCell>
                     </TableRow>
                   ))

@@ -25,7 +25,7 @@ export const Navigation = () => {
                 activeClassName="bg-muted text-foreground"
               >
                 <CreditCard className="h-4 w-4" />
-                Credit Billing
+                Communications
               </NavLink>
             </div>
           </div>

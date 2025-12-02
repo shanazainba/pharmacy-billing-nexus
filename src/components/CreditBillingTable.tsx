@@ -20,6 +20,7 @@ interface CreditBillingTableProps {
 export const CreditBillingTable = ({ creditUsage }: CreditBillingTableProps) => {
   const totalWhatsapp = creditUsage.reduce((sum, usage) => sum + usage.whatsappMessages, 0);
   const totalEmail = creditUsage.reduce((sum, usage) => sum + usage.emailMessages, 0);
+  const totalMessages = totalWhatsapp + totalEmail;
   const totalRevenue = creditUsage.reduce((sum, usage) => sum + usage.whatsappRevenue + usage.emailRevenue, 0);
 
   const handleExportExcel = () => {
@@ -50,30 +51,38 @@ export const CreditBillingTable = ({ creditUsage }: CreditBillingTableProps) => 
               <TableHead className="font-semibold">Clinic Name</TableHead>
               <TableHead className="font-semibold text-right">WhatsApp Messages</TableHead>
               <TableHead className="font-semibold text-right">Email Messages</TableHead>
+              <TableHead className="font-semibold text-right">Total Messages</TableHead>
               <TableHead className="font-semibold text-right">Revenue Generated</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {creditUsage.map((usage) => (
-              <TableRow key={usage.clinicId} className="hover:bg-muted/50 transition-colors">
-                <TableCell className="font-medium">{usage.clinicName}</TableCell>
-                <TableCell className="text-right font-medium text-primary">
-                  {usage.whatsappMessages.toLocaleString()}
-                </TableCell>
-                <TableCell className="text-right font-medium text-primary">
-                  {usage.emailMessages.toLocaleString()}
-                </TableCell>
-                <TableCell className="text-right font-semibold">
-                  ${(usage.whatsappRevenue + usage.emailRevenue).toFixed(2)}
-                </TableCell>
-              </TableRow>
-            ))}
+            {creditUsage.map((usage) => {
+              const totalClinicMessages = usage.whatsappMessages + usage.emailMessages;
+              return (
+                <TableRow key={usage.clinicId} className="hover:bg-muted/50 transition-colors">
+                  <TableCell className="font-medium">{usage.clinicName}</TableCell>
+                  <TableCell className="text-right font-medium text-primary">
+                    {usage.whatsappMessages.toLocaleString()}
+                  </TableCell>
+                  <TableCell className="text-right font-medium text-primary">
+                    {usage.emailMessages.toLocaleString()}
+                  </TableCell>
+                  <TableCell className="text-right font-medium">
+                    {totalClinicMessages.toLocaleString()}
+                  </TableCell>
+                  <TableCell className="text-right font-semibold">
+                    ${(usage.whatsappRevenue + usage.emailRevenue).toFixed(2)}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
           <TableFooter>
             <TableRow className="bg-muted/50 font-semibold">
               <TableCell>Total</TableCell>
               <TableCell className="text-right text-primary">{totalWhatsapp.toLocaleString()}</TableCell>
               <TableCell className="text-right text-primary">{totalEmail.toLocaleString()}</TableCell>
+              <TableCell className="text-right text-primary">{totalMessages.toLocaleString()}</TableCell>
               <TableCell className="text-right">${totalRevenue.toFixed(2)}</TableCell>
             </TableRow>
           </TableFooter>
