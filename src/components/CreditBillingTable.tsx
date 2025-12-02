@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { format } from 'date-fns';
 import {
   Table,
@@ -12,16 +13,20 @@ import { Button } from '@/components/ui/button';
 import { FileSpreadsheet, FileText } from 'lucide-react';
 import { CreditUsage } from '@/types';
 import { exportCreditUsageToExcel, exportCreditUsageToPDF } from '@/lib/exportUtils';
+import { SettlementDialog } from './SettlementDialog';
 
 interface CreditBillingTableProps {
   creditUsage: CreditUsage[];
 }
 
 export const CreditBillingTable = ({ creditUsage }: CreditBillingTableProps) => {
+  const [settlementOpen, setSettlementOpen] = useState(false);
+  
   const totalWhatsapp = creditUsage.reduce((sum, usage) => sum + usage.whatsappMessages, 0);
   const totalEmail = creditUsage.reduce((sum, usage) => sum + usage.emailMessages, 0);
   const totalMessages = totalWhatsapp + totalEmail;
   const totalRevenue = creditUsage.reduce((sum, usage) => sum + usage.whatsappRevenue + usage.emailRevenue, 0);
+  const balance = totalRevenue * 0.1;
 
   const handleExportExcel = () => {
     exportCreditUsageToExcel(creditUsage);
@@ -78,16 +83,37 @@ export const CreditBillingTable = ({ creditUsage }: CreditBillingTableProps) => 
             })}
           </TableBody>
           <TableFooter>
-            <TableRow className="bg-muted/50 font-semibold">
-              <TableCell>Total</TableCell>
-              <TableCell className="text-right text-primary">{totalWhatsapp.toLocaleString()}</TableCell>
-              <TableCell className="text-right text-primary">{totalEmail.toLocaleString()}</TableCell>
-              <TableCell className="text-right text-primary">{totalMessages.toLocaleString()}</TableCell>
-              <TableCell className="text-right">${totalRevenue.toFixed(2)}</TableCell>
+            <TableRow className="bg-muted/50">
+              <TableCell colSpan={4} className="font-semibold">Total Credits</TableCell>
+              <TableCell className="text-right">
+                <div className="flex items-center justify-end gap-4">
+                  <span className="font-semibold text-primary text-lg">
+                    {totalMessages.toLocaleString()}
+                  </span>
+                  <Button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSettlementOpen(true);
+                    }}
+                    size="sm"
+                  >
+                    Credits Settle
+                  </Button>
+                </div>
+              </TableCell>
             </TableRow>
           </TableFooter>
         </Table>
       </div>
+
+      <SettlementDialog
+        open={settlementOpen}
+        onOpenChange={setSettlementOpen}
+        totalOrders={creditUsage.length}
+        totalCredits={totalMessages}
+        payableAmount={totalRevenue}
+        balance={balance}
+      />
     </div>
   );
 };
